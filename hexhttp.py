@@ -3,6 +3,7 @@
 import sys
 import argparse
 import re
+import os
 
 from modules.utils import *
 
@@ -44,6 +45,22 @@ except:
 # DEBUG completed_tasks = 0
 # DEBUG lock = threading.Lock()
 
+# Get the script's directory
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+def get_absolute_path(relative_path):
+    """
+    Convert a relative path to an absolute path based on the script's location.
+    
+    Args:
+        relative_path (str): Relative path starting with './'
+        
+    Returns:
+        str: Absolute path based on script's location
+    """
+    if relative_path.startswith('./'):
+        return os.path.join(SCRIPT_DIR, relative_path[2:])
+    return os.path.join(SCRIPT_DIR, relative_path)
 
 def args():
     """
@@ -368,7 +385,18 @@ if __name__ == "__main__":
     humans = results.humans
     proxy = results.custom_proxy
 
-    configure_logging(results.verbose, results.log, results.log_file)
+    # Convert relative log file path to absolute
+    if results.log_file.startswith('./'):
+        log_file = get_absolute_path(results.log_file)
+    else:
+        log_file = results.log_file
+        
+    # Ensure logs directory exists
+    log_dir = os.path.join(SCRIPT_DIR, 'logs')
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+
+    configure_logging(results.verbose, results.log, log_file)
 
     global human
 
@@ -407,7 +435,13 @@ if __name__ == "__main__":
         s.max_redirects = 60
 
         if url_file and threads != 1337:
-            with open(url_file, "r") as urls:
+            # Convert relative url_file path to absolute if needed
+            if not os.path.isabs(url_file):
+                abs_url_file = get_absolute_path(url_file)
+            else:
+                abs_url_file = url_file
+                
+            with open(abs_url_file, "r") as urls:
                 urls = urls.read().splitlines()
             try:
                 for url in urls:
@@ -422,13 +456,19 @@ if __name__ == "__main__":
                 print("Exiting")
                 sys.exit()
             except FileNotFoundError:
-                print("Input file not found")
+                print(f"Input file not found: {abs_url_file}")
                 sys.exit()
             except Exception as e:
                 print(f"Error : {e}")
             print("Scan finish")
         elif url_file and threads == 1337:
-            with open(url_file, "r") as urls:
+            # Convert relative url_file path to absolute if needed
+            if not os.path.isabs(url_file):
+                abs_url_file = get_absolute_path(url_file)
+            else:
+                abs_url_file = url_file
+                
+            with open(abs_url_file, "r") as urls:
                 urls = urls.read().splitlines()
                 for url in urls:
                     main(url, s, auth)
