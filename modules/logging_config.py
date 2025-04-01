@@ -15,6 +15,7 @@ Functions:
         log_file (str): The file path pattern for the log file. Defaults "./logs/%Y%m%d_%H%M.log".
 """
 
+import os
 import logging
 import logging.config
 from time import strftime
@@ -71,6 +72,20 @@ def configure_logging(verbose:int, log: int, log_file: str = "./logs/%Y%m%d_%H%M
         log_level = max(logging.DEBUG, logging.WARNING - verbose * 10)
     else:
         log_level = log
+    
+    # Get the root directory of the HExHTTP project
+    script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    
+    # Convert relative log file path to absolute path
+    if log_file.startswith('./'):
+        abs_log_file = os.path.join(script_dir, log_file[2:])
+    else:
+        abs_log_file = os.path.join(script_dir, log_file)
+    
+    # Ensure the logs directory exists
+    log_dir = os.path.dirname(os.path.join(script_dir, 'logs'))
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
 
     custom_logger_config = {
         "version": 1,
@@ -85,7 +100,7 @@ def configure_logging(verbose:int, log: int, log_file: str = "./logs/%Y%m%d_%H%M
                 "class": "logging.FileHandler",
                 "formatter": "customFormatter",
                 "level": log_level,
-                "filename": strftime(log_file),
+                "filename": strftime(abs_log_file),
                 "mode": "w",
             },
         },
