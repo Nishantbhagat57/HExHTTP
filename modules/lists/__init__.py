@@ -5,6 +5,7 @@
 This module provides functionality to load payloads from files into lists.
 """
 
+import os
 from typing import List
 from modules.lists.payloads_errors import payloads_keys
 from modules.lists.all_payload_keys import all_payload_keys
@@ -22,14 +23,19 @@ def load_payloads_from(file_path: str) -> List[str]:
     :param file_path: Path to the file containing payloads.
     :return: A list of payloads.
     """
+    # Get the directory where the script is located
+    script_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    absolute_path = os.path.join(script_dir, file_path.lstrip('./'))
+    
     results: List[str] = []
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(absolute_path, "r", encoding="utf-8") as f:
             results = [line for line in f.read().split("\n") if line]
     except FileNotFoundError:
-        print(f"The file '{file_path}' was not found.")
+        print(f"The file '{file_path}' was not found. Tried: {absolute_path}")
     return results
 
 
-mobile_user_agents = load_payloads_from("./modules/lists/mobile-user-agent.lst")
-header_list = load_payloads_from("./modules/lists/lowercase-headers.lst")
+# Use paths relative to the HExHTTP root directory
+mobile_user_agents = load_payloads_from("modules/lists/mobile-user-agent.lst")
+header_list = load_payloads_from("modules/lists/lowercase-headers.lst")
