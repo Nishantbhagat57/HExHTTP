@@ -437,7 +437,12 @@ if __name__ == "__main__":
         if url_file and threads != 1337:
             # Convert relative url_file path to absolute if needed
             if not os.path.isabs(url_file):
-                abs_url_file = get_absolute_path(url_file)
+                # Try relative to current directory first
+                if os.path.exists(url_file):
+                    abs_url_file = os.path.abspath(url_file)
+                else:
+                    # Try relative to script directory
+                    abs_url_file = get_absolute_path(url_file)
             else:
                 abs_url_file = url_file
                 
@@ -464,7 +469,12 @@ if __name__ == "__main__":
         elif url_file and threads == 1337:
             # Convert relative url_file path to absolute if needed
             if not os.path.isabs(url_file):
-                abs_url_file = get_absolute_path(url_file)
+                # Try relative to current directory first
+                if os.path.exists(url_file):
+                    abs_url_file = os.path.abspath(url_file)
+                else:
+                    # Try relative to script directory
+                    abs_url_file = get_absolute_path(url_file)
             else:
                 abs_url_file = url_file
                 
@@ -489,3 +499,4 @@ if __name__ == "__main__":
         print(f"Error : {e}")
     print("")
     # print("Scan finish")
+
